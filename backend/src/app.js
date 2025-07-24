@@ -1,13 +1,21 @@
-
-const express = require('express');
-// require('dotenv').config();
-const rateLimit = require('express-rate-limit');
-const cookieParser = require('cookie-parser');
+import express from 'express'
+import rateLimit from'express-rate-limit';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import userRoutes from './application/routes/user/userRoutes.js'
+import adminRoutes from './application/routes/admin/adminRoutes.js'
 
 const app=express();
 
-app.use(express.json({limit:'10mb'}));
-app.use(express.urlencoded({extended:true,limit:'10mb'}));
+app.use(
+    cors({
+        origin:process.env.CLIENT_URL,
+        credentials:true,
+    })
+);
+
+app.use(express.json());
+app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
 
 app.use(express.static('uploads'));
@@ -16,8 +24,9 @@ app.get('/', (req, res) => {
     res.json({ message: 'Student Management Portal API' });
 });
 
-// app.get('*',(req,res)=>{
-//     res.status(404).json({error:"Route not found"});
-// })
+app.use('/user',userRoutes);
+app.use('/admin',adminRoutes);
 
-module.exports=app;
+
+
+export default app;

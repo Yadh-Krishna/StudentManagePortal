@@ -1,5 +1,6 @@
-const {Pool}= require('pg');
-require('dotenv').config();
+import {Pool} from 'pg';
+import dotenv from 'dotenv'
+dotenv.config();
 
 let sslConfig=false;
 
@@ -19,5 +20,7 @@ const pool = new Pool({
     connectionTimeoutMillis:2000
 });
 
-module.exports=pool;
+
+
+export default pool;
 
