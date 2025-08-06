@@ -15,4 +15,14 @@ export class StudentRepository{
         const result = await pool.query(query,values);
         return result.rows[0];
     }
+
+    async findByEmail(email){
+        const query=`select * from students where email_id = $1`;
+        const values=[email];
+
+        const result=await pool.query(query,values);
+        // console.log("Find BY Email",result);
+        return result.rows[0];
+    }
+   
 }

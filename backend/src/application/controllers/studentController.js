@@ -1,28 +1,54 @@
 
 import { StudentValidator } from '../../validators/StudentValidator.js';
-import { StudentUseCase } from '../../domain/usecases/addStudentUseCase.js';
-import { StudentRepository } from '../../domain/repositories/StudentRepository.js';
 
 export class StudentController{
-    static async create(req,res){
-
+    constructor(useCase){
+        this.useCase=useCase;
+    }
+     async create(req,res){
         const data= req.body;
-        // console.log("From PostMan",data);
-        const errors= StudentValidator.validate(data);
-
+        // console.log("From React",data);        
+        delete data.confirmPassword;
+        
+        const errors= StudentValidator.validate(data,"login");
+        // console.log("Errors ",errors);  
         if(errors.length>0)
            return res.status(400).json({errors});
-
-        const reposit= new StudentRepository();
-        console.log("reposit", reposit)
-        const useCase= new StudentUseCase(reposit);
-
         try{
-            const student= await useCase.execute(data);
+            // console.log("Entered try");
+            const student= await this.useCase.execute(data);
+            console.log("Student ",student);
             if(student)
-                 res.status(200).json({message:"Student Created",student});
+            return res.status(200).json({message:"Student Created",student});
+
+            return res.status(400).json({message:"User Already Exists"});
+
         }catch(err){
             res.status(500).json({error:err.message});
         }
+    }
+
+     async login(req,res){
+        const data=req.body;
+        // console.log("Data from React",data);
+        const errors= StudentValidator.validate(data,"login");
+
+        if(errors.length >0){
+            //  console.log("Sending validation error response");
+            return res.status(400).json({errors});
+        }
+        try{
+            // console.log("Entered Try block with data ");
+            const userDat= await this.useCase.allowAccess(data);   
+            console.log("Result ",userDat);         
+            return res.status(200).json({userDat});                      
+        }catch(err){
+            console.log("Error triggered ",err);
+            return res.status(400).json({message:err.message});
+        }
+
+
+
+       
     }
 }

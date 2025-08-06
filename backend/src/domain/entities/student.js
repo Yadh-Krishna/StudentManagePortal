@@ -1,7 +1,7 @@
 export class Student{
     constructor({
-    first_name,
-    last_name,
+    firstName,
+    lastName,
     email_id,
     password,
     profileimageurl = '',
@@ -9,8 +9,8 @@ export class Student{
     dob = null,
     address = ''
   }){
-    this.first_name = first_name;
-    this.last_name = last_name;
+    this.first_name = firstName;
+    this.last_name = lastName;
     this.email_id = email_id;
     this.password = password;
     this.profileimageurl = profileimageurl;

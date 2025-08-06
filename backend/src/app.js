@@ -2,8 +2,8 @@ import express from 'express'
 import rateLimit from'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import userRoutes from './application/routes/user/userRoutes.js'
-import adminRoutes from './application/routes/admin/adminRoutes.js'
+import userRoutes from './application/routes/userRoutes.js'
+import adminRoutes from './application/routes/adminRoutes.js'
 
 const app=express();
 
