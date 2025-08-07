@@ -1,5 +1,6 @@
 
 import { StudentValidator } from '../../validators/StudentValidator.js';
+import fs from 'fs';
 
 export class StudentController{
     constructor(useCase){
@@ -45,10 +46,21 @@ export class StudentController{
         }catch(err){
             console.log("Error triggered ",err);
             return res.status(400).json({message:err.message});
-        }
-
-
-
-       
+        }       
     }
+
+    async uploadProfileImage(req, res) {
+     try {
+        // console.log("Request from postMan ",req.file);
+    const filePath = req.file.path;
+    const studentId = req.user.id;
+
+    const updatedStudent = await this.useCase.uploadProfileImage(filePath, studentId);
+    fs.unlinkSync(filePath); 
+    return res.status(200).json({ message:"Profile Picture uploaded Successfully",profileimageurl: updatedStudent.profileimageurl });
+  } catch (err) {
+    console.log("Upload Error:", err);
+    res.status(500).json({ error: "Image upload failed" });
+  }
+}
 }

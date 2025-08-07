@@ -15,7 +15,7 @@ export class PasswordHasher{
 
     async createToken(data){        
         delete data.password;
-        console.log("Data ",data);
+        // console.log("Data ",data);
         const token= jwt.sign(data,process.env.JWT_SECRET,{
             expiresIn: '1h',            
         });        

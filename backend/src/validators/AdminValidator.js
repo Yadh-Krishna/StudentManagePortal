@@ -1,7 +1,7 @@
 
 export class AdminValidator{
     static validate(data){
-        console.log("Data ",data);
+        // console.log("Data ",data);
         const errors=[];        
         if(!data){
             errors.push("Invalid data provided");

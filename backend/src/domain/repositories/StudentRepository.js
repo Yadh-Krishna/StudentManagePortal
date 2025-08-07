@@ -24,5 +24,12 @@ export class StudentRepository{
         // console.log("Find BY Email",result);
         return result.rows[0];
     }
+
+    async updateProfileImage(studentId, imageUrl) {
+    const query = `UPDATE students SET profileimageurl = $1 WHERE id = $2 RETURNING *`;
+    const values = [imageUrl, studentId];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  }
    
 }

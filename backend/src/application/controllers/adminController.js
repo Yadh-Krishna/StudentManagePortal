@@ -16,7 +16,7 @@ export class AdminController{
 
         try {
             // const allowAccess= await this.useCase.allowAdminAccess(data);
-            const obj= await this.useCase.allowAdminAccess(data);   
+            const obj= await this.useCase.allowAccess(data);   
             console.log("Result ",obj);         
             return res.status(200).json({obj});
         } catch (error) {

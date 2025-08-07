@@ -21,14 +21,14 @@ export class StudentUseCase{
     }
 
     async allowAccess(data){
-        console.log("Data from useCase",data)
+        // console.log("Data from useCase",data)
         const student= await this.studentRepository.findByEmail(data.email_id);
-        console.log("Student ",student);
+        // console.log("Student ",student);
         if(!student){
              throw new Error("Student not found");
         }
         const isMatch= await this.passwordHasher.compare(data.password,student.password);
-        console.log("Allow Access ", isMatch);
+        // console.log("Allow Access ", isMatch);
         // return isMatch;
 
         if(!isMatch){

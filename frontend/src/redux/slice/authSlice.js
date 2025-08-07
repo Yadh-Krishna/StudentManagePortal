@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 
 const userAxios= axios.create({
     baseURL: "http://localhost:5213/user",
@@ -21,8 +21,7 @@ export const loginUser= createAsyncThunk("/login",async(credential,{rejectWithVa
         
         // console.log("Create Response",credential);
         const response = await userAxios.post("/login", credential);        
-        const {data,token}= response.data.userDat;
-        console.log("Response from Server",token,data)    
+        const {data,token}= response.data.userDat;      
         setAuthToken(token);        
         return {data,token};
     }catch(err){
@@ -30,6 +29,24 @@ export const loginUser= createAsyncThunk("/login",async(credential,{rejectWithVa
         return rejectWithValue(err.response?.data?.message||"Login Failed");
     }   
 })
+
+
+    export const updateProfileImage = createAsyncThunk(
+        '/upload',async (formData, thunkAPI) => {
+            try {
+                // console.log("Form Data ", formData);
+            const res = await userAxios.put('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            const result= res.data;
+            console.log("Respose from sercver ", result);
+            // toast.success(res.data.message);
+            return res.data.profileimageurl;
+            } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || "Upload failed");
+            }
+        }
+        );
 
 export const registerUser = createAsyncThunk("/register", async (userData, { rejectWithValue }) => {
   try {
@@ -54,7 +71,10 @@ const authSlice= createSlice({
         error:null,
     },
     reducers:{
-    logout: (state) => {
+        // setUser:(state, action)=>{
+        //     state.user=action.payload;
+        // },
+        logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
@@ -98,6 +118,21 @@ const authSlice= createSlice({
         state.loading = false
         state.error = action.payload
       })
+         .addCase(updateProfileImage.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProfileImage.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.profileimageurl = action.payload;
+        }
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(updateProfileImage.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 })
 
