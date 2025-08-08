@@ -62,5 +62,24 @@ export class StudentController{
     console.log("Upload Error:", err);
     res.status(500).json({ error: "Image upload failed" });
   }
+    }
+  async updateStudent(req, res) {
+  try {
+    const studentId = req.user.id;
+    const data = req.body;
+        
+    const errors = StudentValidator.validate(data, "update"); 
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    const updatedStudent = await this.useCase.updateStudentProfile(studentId, data);
+
+    return res.status(200).json({ message: "Profile updated successfully", student: updatedStudent });
+
+  } catch (err) {
+    console.error("Update Error:", err);
+    return res.status(500).json({ error: err.message });
+  }
 }
 }

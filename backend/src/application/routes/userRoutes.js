@@ -11,7 +11,7 @@ const upload = multer({storage});
 router.post('/register',studentController.create.bind(studentController));
 router.post('/login',studentController.login.bind(studentController));
 router.put('/upload',UserAuth.userAuthentication,upload.single('image'),studentController.uploadProfileImage.bind(studentController));
-
+router.put('/update',UserAuth.userAuthentication,studentController.updateStudent.bind(studentController));
 
 
 export default router;

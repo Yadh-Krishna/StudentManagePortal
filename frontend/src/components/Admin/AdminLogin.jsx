@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector,useDispatch } from 'react-redux';
 import {adminLogin, clearError} from "../../redux/slice/adminSlice";
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
     const {loading, error}=useSelector((state)=>state.admin);
     const dispatch = useDispatch();
-    
+    const navigate=useNavigate();
     const [errors,setErrors]=useState({});
     const [formData, setFormData]= useState({
         email:"",
@@ -37,15 +39,26 @@ const AdminLogin = () => {
         });
     }
 
-     const handleSubmit=(e)=>{
+     const handleSubmit=async(e)=>{
       e.preventDefault();    
+
       const validationErrors = validate();
       if (Object.keys(validationErrors).length > 0) {
         setErrors(validationErrors);
         return;
       }    
       setErrors({});
-      dispatch(adminLogin(formData));
+       try {
+              const result = await dispatch(adminLogin(formData)).unwrap();            
+              if(result.data){
+              toast.success("Admin Logged in Successfull");
+              navigate("/admin/dashboard");
+              }else{
+                toast.error("User not found");        
+              }
+            } catch (err) {
+              toast.error(err || "Login failed. Please try again.");
+            }
       dispatch(clearError());
      }
 

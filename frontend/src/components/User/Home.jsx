@@ -1,23 +1,45 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState,useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {updateProfileImage, logout } from '../../redux/slice/authSlice'
+import {updateProfileImage, logout,updateProfile, setUser} from '../../redux/slice/authSlice'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify';
 
+
 import { User, Mail, Phone, MapPin, Calendar, Clock, Edit, Upload, LogOut } from 'lucide-react'
+import ProfileModal from './ProfileModal';
 
 const Home = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.auth)
-
-    const fileInputRef = useRef();
+  const fileInputRef = useRef();
+  const [isModal, setModal]= useState(false);
+  const [errors,setErrors]=useState({});
   
+  const [formData, setFormData] = useState({
+    first_name: user?.first_name||"",
+    last_name:user?.last_name|| "",
+    phone: user?.phone||"",
+    address: user?.address|| "",
+    email_id: user?.email_id||"",
+    password: "",
+    confirmPassword:"",
+    dob : user?.dob||"",
+  });
+
   const handleLogout = () => {
     dispatch(logout())
     toast.success("Logged out successfully!")
     navigate('/user/login')
   }
+
+  useEffect(()=>{
+        const token= localStorage.getItem('userToken');
+        if(token){
+            userData= {...user};
+            dispatch(setUser({token,user:userData}));
+        }
+    },[]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -35,6 +57,84 @@ const Home = () => {
       .then(()=>toast.success("Profile updated!"))
       .catch((err)=>toast.error(err));    
     }
+
+    const handleChange =(e)=>{
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        })
+        }
+
+    const validate = () => {
+        const newErrors = {};
+
+        if (!formData.first_name.trim()) {
+            newErrors.first_name = "First name is required.";
+        }
+
+        if (!formData.last_name.trim()) {
+            newErrors.last_name = "Last name is required.";
+        }
+
+        if (!formData.address || formData.address.trim().split(" ").length >= 10) {
+            newErrors.address = "Address must contain atmost 10 words.";
+        }
+
+        if (!formData.dob || new Date(formData.dob) > new Date()) {
+            newErrors.dob = "Enter a valid Date and it should not be a future date.";
+        }
+
+        if (!formData.email_id.trim()) {
+        newErrors.email_id = "Email is required";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_id)) {
+        newErrors.email_id = "Valid Email is required";
+      }
+
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(formData.phone)) {
+            newErrors.phone = "Phone number must be exactly 10 digits.";
+        }
+
+        if (formData.password == "") {
+        delete formData.password;
+        } else {
+        if (formData.password !== formData.confirmPassword) {
+        newErrors.password = "Passwords do not match.";        
+        }    
+        if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(formData.password)) {
+        newErrors.password = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.";
+        }
+        }        
+
+        return newErrors;
+        };
+
+    const handleSubmit=(e)=>{
+        e.preventDefault();
+        
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+
+        // const payload = { ...formData };
+        // if (!payload.password){
+        //     delete payload.password;
+        //     delete payload.confirmPassword;
+        // } 
+        setErrors({});
+        
+        dispatch(updateProfile(formData)).unwrap()
+        .then(()=>{
+            setModal(false);
+            toast.success("User updated Successfully !!");            
+        })
+        .catch((err)=>toast.error(err));
+        
+        
+    }
+    
 
   const formatDate = (dateString) => {
     if (!dateString) return "Not Provided"
@@ -79,7 +179,7 @@ const Home = () => {
           </div>
         </div>
       </nav>
-
+            
       {/* Main Content */}
       <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Welcome Section */}
@@ -95,23 +195,10 @@ const Home = () => {
           
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              
-              {/* <div className="relative">
-                <img
-                  src={user?.profileimageurl || "https://picsum.photos/300/15"}
-                  alt="Profile"
-                  className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-                />
-                <Link
-                  to="/upload"
-                  className="absolute bottom-0 right-0 bg-white hover:bg-gray-50 text-gray-700 p-2 rounded-full shadow-lg transition-colors duration-200"
-                  title="Upload Picture"
-                >
-                  <Upload className="w-4 h-4" />
-                </Link>
-              </div> */}
 
-               <div className="relative">
+                <ProfileModal isOpen={isModal} formData={formData} handleChange={handleChange}  onClose={() => setModal(false)} handleSubmit={handleSubmit} errors={errors}/>
+              
+              <div className="relative">
                 <img
                     src={user?.profileimageurl||"https://picsum.photos/300/15"}
                     alt="Profile"
@@ -144,13 +231,14 @@ const Home = () => {
                   <Mail className="w-4 h-4 mr-2" />
                   {user?.email_id}
                 </p>
-                <Link
-                  to="/profile/edit"
+
+                <button
                   className="inline-flex items-center px-6 py-2 bg-white text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-200 shadow-sm"
-                >
+                onClick={()=>setModal(true)}>
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Profile
-                </Link>
+                </button>                             
+                
               </div>
             </div>
           </div>
@@ -229,4 +317,5 @@ const Home = () => {
   )
 }
 
-export default Home
+
+export default Home;

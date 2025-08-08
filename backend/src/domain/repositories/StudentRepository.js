@@ -25,6 +25,36 @@ export class StudentRepository{
         return result.rows[0];
     }
 
+    async findById(id) {
+        const query = `SELECT * FROM students WHERE id = $1`;
+        const values = [id];
+        const result = await pool.query(query, values);
+        return result.rows[0];
+        }
+
+        async updateStudentById(id, data) {
+        const fields = [];
+        const values = [];
+        let index = 1;
+
+        for (const [key, value] of Object.entries(data)) {
+            fields.push(`${key} = $${index}`);
+            values.push(value);
+            index++;
+        }
+
+        values.push(id); 
+
+        const query = `
+            UPDATE students SET ${fields.join(", ")}
+            WHERE id = $${index}
+            RETURNING *;
+        `;
+
+        const result = await pool.query(query, values);
+        return result.rows[0];
+        }
+
     async updateProfileImage(studentId, imageUrl) {
     const query = `UPDATE students SET profileimageurl = $1 WHERE id = $2 RETURNING *`;
     const values = [imageUrl, studentId];

@@ -12,13 +12,14 @@ export class StudentValidator{
         if(!data.email_id || !emailRegex.test(data.email_id)){
             errors.push("Valid Email is required");
         }
-        
+        if(mode==="register"||mode==="login"){
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
          if(!data.password || data.password.length < 8 || !passwordRegex.test(data.password)){
             errors.push("Password must be at least 8 characters long and include uppercase, lowercase, number, and special character");
          }
+        }
 
-         if(mode==='register'){
+         if(mode==='register'||mode==="update"){
 
         if(!data.first_name|| typeof data.first_name !=='string'|| data.first_name.trim()==='')
             errors.push("First Name is Required");
@@ -29,12 +30,11 @@ export class StudentValidator{
         if(!data.phone || data.phone.trim().length < 10)
             errors.push("Phone Number should have 10 digits");
 
-        if(!data.address || data.address.length <= 5)
-            errors.push("Provide a valid address");
-
-        // if(!data.dob < new Date())
-        //     errors.push("Enter a date before the current date");        
-
+        if(!data.address || data.address.length < 10)
+            errors.push("Provide a valid address of length 10 words");
+        
+        if(!data.dob||new Date(data.dob) > new Date())
+            errors.push("Date should be valid and not be of the future");
     }
 
          return errors;

@@ -38,4 +38,24 @@ export class StudentUseCase{
         return res;
 
     }
+        async updateStudentProfile(studentId, data) {
+        const existingStudent = await this.studentRepository.findById(studentId);
+        if (!existingStudent) throw new Error("Student not found");
+
+        const updatedData = {
+            first_name: data.first_name,
+            last_name: data.last_name,
+            phone: data.phone,
+            address: data.address,
+            email_id: data.email_id,
+            dob: data.dob,
+        };
+
+        if (data.password && data.password.trim() !== "") {
+            updatedData.password = await this.passwordHasher.hashPassword(data.password);
+        }
+
+        const updatedStudent = await this.studentRepository.updateStudentById(studentId, updatedData);
+        return updatedStudent;
+        }
 }
